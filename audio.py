@@ -12,7 +12,19 @@ engine = pyttsx3.init()
 hoy = datetime.now()
 
 
+def cambio_dpi(dpi):
+    global num_dpi
+    num_dpi = dpi
 
+
+
+
+def imprecion_datos_por_audio():
+    print('----'*25)
+    for i,j in dic_general_de_datos.items():
+        
+        print(f'dpi = {i} \ndatos = {j}  \n ' )
+        print('----'*25)
 
 
 def speakText(command):   
@@ -23,7 +35,7 @@ def speakText(command):
 
 def escucha():
     with sr.Microphone() as source:
-        r.adjust_for_ambient_noise(source, duration=.2)
+        r.adjust_for_ambient_noise(source, duration=.5)
         print('Speak Anything : ')
         audio = r.listen(source)
     
@@ -66,7 +78,11 @@ def fecha_de_vacunacion():
     speakText('en que mes la recibio')
     lista = ('enero', 'febrero', 'marzo', 'abril', 'mayo',
             'julio', 'junio', 'agosto', 'septiembre',
-            'octubre', 'noviembre', 'diciembre') 
+            'octubre', 'noviembre', 'diciembre',
+            
+            'january', 'february', 'march', 'april',
+            'may','june','july','august','september', 
+            'october' ,'november' ,'december' ) 
 
     while True:
         texto = escucha()
@@ -80,15 +96,15 @@ def fecha_de_vacunacion():
 
 
 def tipo_de_vacuna():
-    dic ={ '1':'pfizer', '2':'sputnik', '3':'moderna'}
+    dic ={ 'primera':'pfizer', 'segunda':'sputnik', 'tercera':'moderna'}
     speakText('que vacuna le pusieron')
-    speakText('solo diga el numero de la vacuna')
-    speakText('pfizer 1. sputnik 2. moderna 3')
+    speakText('diga la posicion de la vacuna')
+    speakText('pfizer primera. sputnik segunda. moderna tercera')
     while True:
         texto = escucha()
         palabra = rec_aproximado(texto, dic.keys())
         if palabra:
-            speakText(f'muy bien, {dic[texto]}')
+            speakText(f'muy bien, {dic[palabra]}')
             return dic[palabra]
         else:
             speakText('podria repetirlo')
@@ -102,8 +118,7 @@ def mes_vacunacion(num):
 
 def guardado_datos():
         dic_general_de_datos[num_dpi] = list_data.pop()
-        print(list_data)
-        print(dic_general_de_datos)
+
 
 
 
@@ -146,8 +161,11 @@ def primera_o_segunda_dosis():
 
 
 if __name__ == '__main__':
-    primera_o_segunda_dosis()
- 
-
-
+    #primera_o_segunda_dosis()
+    dic = {'2320 55634 0103': ['primera vacuna', 'octubre', 'sputnik', 'cuarto modulo'], '3002 03276 0101': ['segunda vacuna', 'febrero', 'pfizer', 'cuarto modulo']}
+    print('----'*25)
+    for i,j in dic.items():
+        
+        print(f'dpi = {i} \ndatos = {j}  \n ' )
+        print('----'*25)
  
