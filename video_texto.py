@@ -1,8 +1,10 @@
 import cv2
 import pytesseract
 import time as t
+from base_de_datos import *
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
+
 
 
 
@@ -16,6 +18,10 @@ class texto:
         self.redundancia_numero = 0
 
 
+    def ingreso(self, texto):
+        self.texto = texto
+
+
     def redundanica_numero(self, numero):
         if self.redundancia_numero == numero:
             self.redundancia_numero == 0
@@ -25,8 +31,6 @@ class texto:
             return False
 
 
-    def ingreso(self, text):
-        self.texto = text
 
 
     def __condiciones(self, cont):
@@ -66,38 +70,25 @@ class video:
     def __init__(self):
         self.vid = cv2.VideoCapture(0)
         self.frame = 0
-        self.frame_tratado = 0
-        self.recorte_de_frame = 0
+  
+        self.recorte_de_nombre = 0
+        self.recorte_de_apellido = 0
+        self.dpi = 0
         self.cond = False
 
 
     def toma_frame(self):
         _, self.frame = self.vid.read()
 
+        self.recorte_de_nombre = self.frame[300:400, 200:500]
+        self.recorte_de_apellido = self.frame[300:400, 200:500]
+        self.dpi = self.frame[300:400, 200:500]
 
-    def umbral_de_frame(self):
-        gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
-        ret,self.frame_tratado = cv2.threshold(gray, 190, 255 , cv2.THRESH_BINARY)
-
-
-    def contornos(self):
-        contours,_ = cv2.findContours(self.frame_tratado,
-                        cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
-        for c in contours:
-            if cv2.contourArea(c)>5500:
-                cv2.drawContours(self.frame, c, -1, (0, 0, 255), 2, cv2.LINE_AA)
-
-                x,y,w,h = cv2.boundingRect(c)
-                self.recorte_de_frame = self.frame[y:y+h, x:x+w]
-                return True
-                
-        return False
 
 
     def colocar_texto(self, texto):
         texto = 'DPI = '+ texto
-        ubicacion = (100, 240)
+        ubicacion = (50, 240)
         font = cv2.FONT_HERSHEY_TRIPLEX
         tamanoLetra = 1
         colorLetra = (255,0,0)
@@ -107,7 +98,7 @@ class video:
 
     def mostrar_frame(self):
         cv2.imshow('frame', self.frame)
-        #cv2.imshow('recorte', self.recorte_de_frame)
+        cv2.imshow('recorte', self.recorte_de_nombre)
         if cv2.waitKey(1) & 0xFF == ord('q'):   self.cond = True
 
 
@@ -118,30 +109,49 @@ class video:
 
 
 
+
+
+
+
+
+
+
 if __name__=='__main__':
     video = video()
     text = texto()
 
     while True:
         video.toma_frame()
-        video.umbral_de_frame() 
-        
-        cond_recorte = video.contornos()
-        if cond_recorte: 
+
             #lo mas lento es la busqueda con pytesseract
-            texto_tess = pytesseract.image_to_string(video.recorte_de_frame, config='--psm 11')
-            text.ingreso(texto_tess)
-            text.busqueda_numeros_consecutivos()
+        texto_tess = pytesseract.image_to_string(video.dpi, config='--psm 11')
+
+        text.ingreso(texto_tess)
+        text.busqueda_numeros_consecutivos()
+        
 
 
-            if text.condicion and text.redundanica_numero( text.recorte):
-                video.colocar_texto(text.recorte)
-                video.mostrar_frame()
-                text.condicion = False
+        if text.condicion:
+            
+            update_data()
+            texto_nombre = pytesseract.image_to_string(video.recorte_de_nombre, config='--psm 11')
+            texto_apellido = pytesseract.image_to_string(video.recorte_de_apellido, config='--psm 11')
+ 
+            video.colocar_texto(text.recorte) 
+            video.mostrar_frame()
+            f_datos()
+            text.condicion = False
 
-                
+        
 
         video.mostrar_frame()
         if video.cond: break
 
     video.terminar()
+
+
+
+
+
+
+
